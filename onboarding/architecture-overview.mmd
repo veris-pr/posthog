@@ -1,0 +1,48 @@
+flowchart LR
+    user[User]
+    sdk[SDKs and event sources]
+
+    subgraph frontend["Frontend"]
+        manifest[Product manifests]
+        web_app[React app]
+    end
+
+    subgraph django["Django web app"]
+        api_router[API router]
+        core_api[Core APIs in posthog/api]
+        product_views[Product presentation views]
+        product_facade[Product facade]
+        product_logic[Product logic]
+        core_tasks[Celery tasks]
+    end
+
+    subgraph services["High-throughput services"]
+        rust_capture[Rust capture and flags]
+        node_ingestion[Node ingestion pipelines]
+    end
+
+    subgraph storage["Data and messaging"]
+        postgres[(PostgreSQL)]
+        clickhouse[(ClickHouse)]
+        kafka[(Kafka)]
+        cache[(Cache)]
+    end
+
+    manifest --> web_app
+    user --> web_app
+    web_app --> api_router
+    api_router --> core_api
+    api_router --> product_views
+    product_views --> product_facade
+    product_facade --> product_logic
+    core_api --> postgres
+    core_api --> clickhouse
+    product_logic --> postgres
+    product_logic --> cache
+    product_logic --> kafka
+    core_tasks --> postgres
+    sdk --> rust_capture
+    rust_capture --> kafka
+    kafka --> node_ingestion
+    node_ingestion --> clickhouse
+    node_ingestion --> postgres

@@ -1,0 +1,23 @@
+flowchart TB
+    sdk[SDK or event source]
+    capture[Capture service]
+    kafka[(Kafka)]
+    joined[Joined ingestion pipeline]
+    pre_team[Pre-team preprocessing]
+    team_aware[Team-aware preprocessing]
+    grouped[Group by token and distinct id]
+    per_entity[Per-distinct-id processing]
+    outputs[Outputs and side effects]
+    clickhouse[(ClickHouse)]
+    postgres[(PostgreSQL)]
+
+    sdk --> capture
+    capture --> kafka
+    kafka --> joined
+    joined --> pre_team
+    pre_team --> team_aware
+    team_aware --> grouped
+    grouped --> per_entity
+    per_entity --> outputs
+    outputs --> clickhouse
+    outputs --> postgres

@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant R as API Router
+    participant V as NotificationsViewSet
+    participant L as Notifications Logic
+    participant P as PostgreSQL
+    participant C as Cache
+    participant K as Kafka
+
+    U->>F: Open notifications
+    F->>R: GET /api/environments/:team_id/notifications
+    R->>V: Route request
+    V->>P: Query NotificationEvent and read state
+    V->>C: Read or set unread count cache
+    P-->>V: Notification rows
+    C-->>V: Cached count or miss
+    V-->>F: Serialized response
+
+    Note over F,K: Creation flow is separate from the read endpoint
+    F->>R: Action triggers notification creation
+    R->>L: Call create_notification
+    L->>P: Create NotificationEvent
+    L->>K: Publish after commit
+    L->>C: Invalidate unread counts
+    L-->>F: Creation side effect completed
